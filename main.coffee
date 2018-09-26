@@ -30,6 +30,9 @@ class InfixBinaryOperator extends MathNode
 		@symbol_angle = 0
 		@symbol_angle_to = @operand_angle
 
+		@width = 0
+		@height = 0
+
 	draw: ->
 		# TODO: restore external configurability of these now-computed properties?
 		# I could have vertical_X and horizontal_X for each, but maybe there's something better to do
@@ -71,6 +74,19 @@ class InfixBinaryOperator extends MathNode
 		@rhs.draw()
 		ctx.restore()
 
+		# @width = lerp(
+		# 	Math.max(@lhs.width, @rhs.width)
+		# 	@lhs.width + @rhs.width
+			
+		# )
+		# TODO: smooth
+		if @vertical
+			@width = Math.max(@lhs.width, @rhs.width)
+			@height = @lhs.height + @rhs.height + @operand_separation_padding
+		else
+			@width = @lhs.width + @rhs.width + @operand_separation_padding
+			@height = Math.max(@lhs.height, @rhs.height)
+
 
 class Fraction extends InfixBinaryOperator
 	constructor: (@divisor, @denominator)->
@@ -108,6 +124,7 @@ class Literal extends MathNode
 	constructor: (@value)->
 		super()
 		@width = 0
+		@height = 0
 	draw: ->
 		font_size = 100
 		ctx.textAlign = "center"
@@ -117,9 +134,13 @@ class Literal extends MathNode
 		ctx.scale(1/font_size, 1/font_size)
 		ctx.fillText(@value, 0, 0)
 		@width = ctx.measureText(@value).width / font_size
+		@height = 1
 		ctx.restore()
 
-root = new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
+root = new Fraction(
+	new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
+	new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
+)
 
 mutate = (node = root, levelsProcessed = 0)->
 	if node instanceof Fraction
