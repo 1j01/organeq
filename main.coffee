@@ -188,8 +188,8 @@ mutate = (node = root, levelsProcessed = 0)->
 		mutate subnode, levelsProcessed + 1
 	
 
-setInterval mutate, 500
-# canvas.onclick = -> mutate(root)
+# setInterval mutate, 500
+canvas.onclick = -> mutate(root)
 
 animate ->
 	
