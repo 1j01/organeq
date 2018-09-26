@@ -7,8 +7,11 @@
 		<style>
 			body {
 				font-family: Helvetica, sans-serif;
+				background: black;
+				color: white;
 			}
-			header, footer {
+			header,
+			footer {
 				text-align: center;
 				position: absolute;
 				left: 0;
@@ -24,6 +27,33 @@
 				position: absolute;
 				top: 0;
 				left: 0;
+				z-index: 1;
+			}
+			nav a {
+				color: aqua;
+				display: block;
+				padding: 0.5em;	
+			}
+			nav h1 {
+				margin: 0;
+			}
+			header,
+			footer,
+			nav a {
+				transition: opacity 1s; /* normally I wouldn't go for such a long transition, but this is an ARTSY PROJECT */
+			}
+			header:not(:hover),
+			footer:not(:hover),
+			nav a:not(:hover):not(:focus) {
+				transition-duration: 5s; /* let's make it even longer haha why not */
+			}
+			header:not(:hover),
+			footer:not(:hover) {
+				opacity: 0.5;
+			}
+			nav a:not(:hover):not(:focus) {
+				text-decoration: none;
+				opacity: 0.2;
 			}
 		</style>
 	</head>
