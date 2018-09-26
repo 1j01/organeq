@@ -44,16 +44,15 @@ class InfixBinaryOperator extends MathNode
 		# TODO: a better/cleaner way of handling this animation stuff
 		# and, maybe bring in some spring while you're at it
 		# if it's abstracted properly, adding velocity shouldn't be a problem :)
-		@operand_separation_factor += (@operand_separation_factor_to - @operand_separation_factor) / 20
-		@operand_separation_padding += (@operand_separation_padding_to - @operand_separation_padding) / 20
-		@operand_angle += (@operand_angle_to - @operand_angle) / 20
-		@symbol_angle += (@symbol_angle_to - @symbol_angle) / 20
+		# @operand_separation_factor += (@operand_separation_factor_to - @operand_separation_factor) / 20
+		# @operand_separation_padding += (@operand_separation_padding_to - @operand_separation_padding) / 20
+		# @operand_angle += (@operand_angle_to - @operand_angle) / 20
+		# @symbol_angle += (@symbol_angle_to - @symbol_angle) / 20
 		# faster, arbitrarily (thoughtlessly/carelessly) but nicely varied transition speeds (divisors here):
-		# @operand_separation_factor += (@operand_separation_factor_to - @operand_separation_factor) / 5
-		# @operand_separation_padding += (@operand_separation_padding_to - @operand_separation_padding) / 8
-		# @operand_angle += (@operand_angle_to - @operand_angle) / 5
-		# @stroke_length += (@stroke_length_to - @stroke_length) / 9
-		# @symbol_angle += (@symbol_angle_to - @symbol_angle) / 3
+		@operand_separation_factor += (@operand_separation_factor_to - @operand_separation_factor) / 5
+		@operand_separation_padding += (@operand_separation_padding_to - @operand_separation_padding) / 8
+		@operand_angle += (@operand_angle_to - @operand_angle) / 5
+		@symbol_angle += (@symbol_angle_to - @symbol_angle) / 3
 		
 		@drawOperator()
 
@@ -105,7 +104,8 @@ class Fraction extends InfixBinaryOperator
 	draw: ->
 		super()
 		@stroke_length_to = if @vertical then Math.max(@denominator.width, @divisor.width) else 1.9
-		@stroke_length += (@stroke_length_to - @stroke_length) / 20
+		# @stroke_length += (@stroke_length_to - @stroke_length) / 20
+		@stroke_length += (@stroke_length_to - @stroke_length) / 9
 
 	drawOperator: ->
 		ctx.save()
