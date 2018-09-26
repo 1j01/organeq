@@ -15,7 +15,11 @@ class MathNode
 	constructor: ->
 		# @x = 0
 		# @y = 0
+		# @width = 0
+		# @height = 0
 		@children = []
+	update: ->
+	# draw: ->
 
 class InfixBinaryOperator extends MathNode
 	constructor: (@lhs, @rhs)->
@@ -33,11 +37,11 @@ class InfixBinaryOperator extends MathNode
 		@width = 0
 		@height = 0
 
-	draw: ->
+	update: ->
 		# TODO: restore external configurability of these now-computed properties?
 		# I could have vertical_X and horizontal_X for each, but maybe there's something better to do
 		@operand_separation_factor_to = if @vertical then 0.5 else 1
-		@operand_separation_padding_to = if @vertical then 0.1 else 1
+		@operand_separation_padding_to = if @vertical then 0 else 0.3 # more for horizontal is for fraction slash
 		@symbol_angle_to = if @vertical then Math.PI / 2 else 0.2
 		@operand_angle_to = if @vertical then Math.PI / 2 else 0
 
@@ -53,25 +57,9 @@ class InfixBinaryOperator extends MathNode
 		@operand_separation_padding += (@operand_separation_padding_to - @operand_separation_padding) / 8
 		@operand_angle += (@operand_angle_to - @operand_angle) / 5
 		@symbol_angle += (@symbol_angle_to - @symbol_angle) / 3
-		
-		@drawOperator()
 
-		
-		ctx.save()
-		#ctx.translate(-@operand_separation_factor/2, 0)
-		ctx.rotate(@operand_angle)
-		ctx.translate(-@lhs.width/2 * @operand_separation_factor - @operand_separation_padding/2, 0)
-		ctx.rotate(-@operand_angle)
-		@lhs.draw()
-		ctx.restore()
-		
-		ctx.save()
-		#ctx.translate(@operand_separation_factor/2, 0)
-		ctx.rotate(@operand_angle)
-		ctx.translate(@rhs.width/2 * @operand_separation_factor + @operand_separation_padding/2, 0)
-		ctx.rotate(-@operand_angle)
-		@rhs.draw()
-		ctx.restore()
+		@lhs.update()
+		@rhs.update()
 
 		# @width = lerp(
 		# 	Math.max(@lhs.width, @rhs.width)
@@ -81,10 +69,37 @@ class InfixBinaryOperator extends MathNode
 		# TODO: smooth
 		if @vertical
 			@width = Math.max(@lhs.width, @rhs.width)
-			@height = @lhs.height + @rhs.height + @operand_separation_padding
+			# @height = @lhs.height + @rhs.height + @operand_separation_padding # except it's not centered; we'd have to calculate a bounding box x/y
+			@height = Math.max(@lhs.height, @rhs.height) * 2 + @operand_separation_padding
 		else
-			@width = @lhs.width + @rhs.width + @operand_separation_padding
+			# @width = @lhs.width + @rhs.width + @operand_separation_padding # except it's not centered; we'd have to calculate a bounding box x/y
+			@width = Math.max(@lhs.width, @rhs.width) * 2 + @operand_separation_padding
 			@height = Math.max(@lhs.height, @rhs.height)
+
+	draw: ->
+		
+		@drawOperator()
+
+		
+		ctx.save()
+		#ctx.translate(-@operand_separation_factor/2, 0)
+		ctx.rotate(@operand_angle)
+		# TODO: smooth
+		operand_dimension = if @vertical then @lhs.height else @lhs.width/2 # TODO: why /2?
+		ctx.translate(-operand_dimension * @operand_separation_factor - @operand_separation_padding/2, 0)
+		ctx.rotate(-@operand_angle)
+		@lhs.draw()
+		ctx.restore()
+		
+		ctx.save()
+		#ctx.translate(@operand_separation_factor/2, 0)
+		ctx.rotate(@operand_angle)
+		# TODO: smooth
+		operand_dimension = if @vertical then @rhs.height else @rhs.width/2 # TODO: why /2?
+		ctx.translate(operand_dimension * @operand_separation_factor + @operand_separation_padding/2, 0)
+		ctx.rotate(-@operand_angle)
+		@rhs.draw()
+		ctx.restore()
 
 
 class Fraction extends InfixBinaryOperator
@@ -101,11 +116,33 @@ class Fraction extends InfixBinaryOperator
 		@stroke_length = 0
 		@stroke_length_to = @stroke_length
 
-	draw: ->
+	update: ->
 		super()
-		@stroke_length_to = if @vertical then Math.max(@denominator.width, @divisor.width) else 1.9
+
+		@stroke_length_to =
+			if @vertical
+				Math.max(@denominator.width, @divisor.width, 1) + .9
+			else
+				Math.max(@denominator.height, @divisor.height, 1) + .9
+
 		# @stroke_length += (@stroke_length_to - @stroke_length) / 20
 		@stroke_length += (@stroke_length_to - @stroke_length) / 9
+
+		# TODO: smooth
+		# if Math.random() < 0.5
+		if @vertical
+			@width = Math.max(@width, @stroke_length)
+		else
+			@height = Math.max(@height, @stroke_length)
+
+	draw: ->
+		super()
+		
+		# debug
+		# ctx.save()
+		# ctx.fillStyle = "rgba(255, 125, 125, 0.3)"
+		# ctx.fillRect(-@width/2, -@height/2, @width, @height)
+		# ctx.restore()
 
 	drawOperator: ->
 		ctx.save()
@@ -134,7 +171,7 @@ class Literal extends MathNode
 		ctx.scale(1/font_size, 1/font_size)
 		ctx.fillText(@value, 0, 0)
 		@width = ctx.measureText(@value).width / font_size
-		@height = 1
+		@height = 1.2 # .2 = padding
 		ctx.restore()
 
 root = new Fraction(
@@ -152,6 +189,7 @@ mutate = (node = root, levelsProcessed = 0)->
 	
 
 setInterval mutate, 500
+# canvas.onclick = -> mutate(root)
 
 animate ->
 	
@@ -167,6 +205,7 @@ animate ->
 	ctx.translate(w / 2, h / 2)
 	scale = 100
 	ctx.scale(scale, scale)
+	root.update()
 	root.draw()
 	ctx.restore()
 
