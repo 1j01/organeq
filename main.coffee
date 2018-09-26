@@ -23,7 +23,8 @@ class Fraction extends MathNode
 		@angle = 0.2
 		@angle_to = @angle
 		@separation = 0
-		@separation_padding = 0.4
+		@separation_padding = 0
+		@separation_padding_to = @separation_padding
 		@separation_to = 1
 
 		@stroke_length = 0
@@ -47,7 +48,7 @@ class Fraction extends MathNode
 		ctx.save()
 		#ctx.translate(-@separation/2, 0)
 		ctx.rotate(@angle)
-		ctx.translate(-(@divisor.width/2 + @separation_padding/2) * @separation, 0)
+		ctx.translate(-@divisor.width/2 * @separation - @separation_padding/2, 0)
 		ctx.rotate(-@angle)
 		@divisor.draw()
 		ctx.restore()
@@ -55,20 +56,29 @@ class Fraction extends MathNode
 		ctx.save()
 		#ctx.translate(@separation/2, 0)
 		ctx.rotate(@angle)
-		ctx.translate((@denominator.width/2 + @separation_padding/2) * @separation, 0)
+		ctx.translate(@denominator.width/2 * @separation + @separation_padding/2, 0)
 		ctx.rotate(-@angle)
 		@denominator.draw()
 		ctx.restore()
 		
 		@separation_to = if @vertical then 0.5 else 1
+		@separation_padding_to = if @vertical then 0.1 else 1
 		@stroke_length_to = if @vertical then Math.max(@denominator.width, @divisor.width) else 1.9
 		@stroke_angle_to = if @vertical then Math.PI / 2 else 0.2
 		@angle_to = if @vertical then Math.PI / 2 else 0
 
 		@separation += (@separation_to - @separation) / 20
+		@separation_padding += (@separation_padding_to - @separation_padding) / 20
 		@angle += (@angle_to - @angle) / 20
 		@stroke_length += (@stroke_length_to - @stroke_length) / 20
 		@stroke_angle += (@stroke_angle_to - @stroke_angle) / 20
+		# faster, arbitrarily (thoughtlessly/carelessly) but nicely varied transition speeds (divisors here):
+		# @separation += (@separation_to - @separation) / 5
+		# @separation_padding += (@separation_padding_to - @separation_padding) / 8
+		# @angle += (@angle_to - @angle) / 5
+		# @stroke_length += (@stroke_length_to - @stroke_length) / 9
+		# @stroke_angle += (@stroke_angle_to - @stroke_angle) / 3
+
 
 class Literal extends MathNode
 	constructor: (@value)->
