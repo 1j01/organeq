@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Organeq</title>
+		<style>
+			body {
+				font-family: Helvetica, sans-serif;
+			}
+			header, footer {
+				text-align: center;
+				position: absolute;
+				left: 0;
+				right: 0;
+			}
+			header {
+				top: 0;
+			}
+			footer {
+				bottom: 0;
+			}
+			nav {
+				position: absolute;
+				top: 0;
+				left: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<nav>
+			<h1><a href="https://github.com/1j01/organeq">Organeq</a></h1>
+		</nav>
+		<header>
+			<p title="Symmetry. Flow. Understanding.">Math can be beautiful.</p>
+			<!-- What do I mean by flow? I don't know. But it seemed to flow, you know? -->
+		</header>
+		<footer>
+			<p title="Syntax is an abstraction, and often a distraction.">...and <em>way overcomplicated.</em></p>
+			<!-- <p>Syntax is an abstraction, and often a distraction.</p> -->
+		</footer>
+
+		<script src="lib/coffeescript.js"></script>
+		<script>~function(){var d=document,b=d.body,c=b.appendChild(d.createElement("canvas")),p,i,k
+		canvas=c;ctx=c.getContext("2d")
+		b.style.overflow="hidden";b.style.margin=0;(onresize=function(){c.width=innerWidth,c.height=innerHeight})()
+		animate=function a(f){f(),requestAnimationFrame(function(){a(f)})}
+		for(p=Object.getOwnPropertyNames(Math),i=0;k=p[i];i++){self[k]=Math[k]}TAU=PI*2}()</script>
+		<script src="main.coffee" type="text/coffeescript"></script>
+	</body>
+</html>
