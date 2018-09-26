@@ -9,8 +9,6 @@
 # TODO: bounding box (&etc.) system(s/z)
 # maybe use MathJax? it's supposed to have modular input/output
 
-# TODO: dynamically ever-expanding and ever-complicating expressions or equations
-
 class MathNode
 	constructor: ->
 		# @x = 0
@@ -39,7 +37,7 @@ class Parenthetical extends MathNode
 		ctx.rect(-@width/2, -@height/2, @width, @height)
 		ctx.clip()
 		ctx.beginPath()
-		curve_amount = 0.5
+		curve_amount = 0.5 # TODO: base on height
 		curve_control_points_inset = @height * 0.3
 		for i in [0..2]
 			ctx.save()
@@ -75,6 +73,11 @@ class InfixBinaryOperator extends MathNode
 		@width = 0
 		@height = 0
 
+	Object.defineProperties @prototype,
+		children:
+			get: -> [@lhs, @rhs]
+			set: ([@lhs, @rhs])->
+	
 	update: ->
 		super()
 
@@ -144,16 +147,17 @@ class InfixBinaryOperator extends MathNode
 class Fraction extends InfixBinaryOperator
 	constructor: (@divisor, @denominator)->
 		super()
-		@children.push(
-			@lhs = @divisor
-			@rhs = @denominator
-		) # look how fancy i'm being
-		# isn't it
-		# totally worth it?
-		(no)
 		
 		@stroke_length = 0
 		@stroke_length_to = @stroke_length
+
+	Object.defineProperties @prototype,
+		divisor:
+			get: -> @lhs
+			set: (@lhs)->
+		denominator:
+			get: -> @rhs
+			set: (@rhs)->
 
 	update: ->
 		super()
@@ -226,17 +230,33 @@ root =
 		)
 	)
 
-mutate = (node = root, levelsProcessed = 0)->
+mutate = (node = root)->
 	if node instanceof Fraction
-		# node.operand_angle_to = if levelsProcessed % 2 is 1 then 0.2 else Math.PI / 2
-		# node.operand_angle_to = if Math.random() < 0.5 then 0.2 else Math.PI / 2
-		node.vertical = Math.random() < 0.5
+		if Math.random() < 0.2
+			if node.lhs instanceof Literal
+				new_divisor = new Fraction(
+					node.lhs
+					node.lhs # TODO: maybe copy
+				)
+				new_divisor = new Parenthetical(new_divisor)
+				node.divisor = new_divisor
 	for subnode in node.children
-		mutate subnode, levelsProcessed + 1
-	
+		mutate subnode
 
-# setInterval mutate, 500
-canvas.onclick = -> mutate(root)
+alternateAlignments = (node, fractionLevelsProcessed)->
+	if node instanceof Fraction
+		node.vertical = fractionLevelsProcessed % 2 is 0
+	for subnode in node.children
+		alternateAlignments subnode, fractionLevelsProcessed + (if node instanceof Fraction then 1 else 0)
+
+alternateAlignments(root, 0)
+
+canvas.onclick = (e)->
+	mutate(root)
+	alternateAlignments(root, 0)
+	e.preventDefault()
+canvas.onselectstart = (e)->
+	e.preventDefault()
 
 animate ->
 	
