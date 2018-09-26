@@ -19,38 +19,56 @@ class MathNode
 class Fraction extends MathNode
 	constructor: (@divisor, @denominator)->
 		super()
+
 		@angle = 0.2
+		@angle_to = @angle
 		@separation = 0
 		@separation_padding = 0.4
 		@separation_to = 1
-		@stroke_length = 1.9
+
+		@stroke_length = 0
+		@stroke_length_to = @stroke_length
+		@stroke_angle = 0
+		@stroke_angle_to = @angle
+
 	draw: ->
-		# TODO: at horizontal angle, draw line at max width of sub-mathnodes
-		
-		ctx.save()
-		#ctx.translate(-@separation/2, 0)
-		ctx.translate(-(@divisor.width/2 + @separation_padding/2) * @separation, 0)
-		@divisor.draw()
-		ctx.restore()
 		
 		ctx.save()
 		stroke_width = 0.1
 		#ctx.fillRect(-stroke_width/2, -1, stroke_width, 1.5)
 		ctx.lineWidth = stroke_width
 		ctx.beginPath()
-		ctx.rotate(@angle)
+		ctx.rotate(@stroke_angle)
 		ctx.moveTo(0, -@stroke_length/2)
 		ctx.lineTo(0, @stroke_length/2)
 		ctx.stroke()
 		ctx.restore()
 		
 		ctx.save()
+		#ctx.translate(-@separation/2, 0)
+		ctx.rotate(@angle)
+		ctx.translate(-(@divisor.width/2 + @separation_padding/2) * @separation, 0)
+		ctx.rotate(-@angle)
+		@divisor.draw()
+		ctx.restore()
+		
+		ctx.save()
 		#ctx.translate(@separation/2, 0)
+		ctx.rotate(@angle)
 		ctx.translate((@denominator.width/2 + @separation_padding/2) * @separation, 0)
+		ctx.rotate(-@angle)
 		@denominator.draw()
 		ctx.restore()
 		
+		@separation_to = if @vertical then 0.5 else 1
+		@stroke_length_to = if @vertical then Math.max(@denominator.width, @divisor.width) else 1.9
+		@stroke_angle_to = if @vertical then Math.PI / 2 else 0.2
+		@angle_to = if @vertical then Math.PI / 2 else 0
+
 		@separation += (@separation_to - @separation) / 20
+		@angle += (@angle_to - @angle) / 20
+		@stroke_length += (@stroke_length_to - @stroke_length) / 20
+		@stroke_angle += (@stroke_angle_to - @stroke_angle) / 20
 
 class Literal extends MathNode
 	constructor: (@value)->
@@ -69,6 +87,16 @@ class Literal extends MathNode
 
 root = new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
 
+mutate = (node = root, levelsProcessed = 0)->
+	if node instanceof Fraction
+		# node.angle_to = if levelsProcessed % 2 is 1 then 0.2 else Math.PI / 2
+		# node.angle_to = if Math.random() < 0.5 then 0.2 else Math.PI / 2
+		node.vertical = Math.random() < 0.5
+	for subnode in node.children
+		mutate subnode, levelsProcessed + 1
+	
+
+setInterval mutate, 500
 
 animate ->
 	
