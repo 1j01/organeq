@@ -213,15 +213,18 @@ class Literal extends MathNode
 		@height = 1.2 # .2 = padding
 		ctx.restore()
 
-root = new Fraction(
-	new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
+root =
 	new Parenthetical(
 		new Fraction(
-			new Fraction(new Literal("1×1÷1"), new Literal("1÷1×1"))
-			new Fraction(new Literal("1÷1÷1"), new Literal("1×1×1"))
+			new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
+			new Parenthetical(
+				new Fraction(
+					new Fraction(new Literal("1×1÷1"), new Literal("1÷1×1"))
+					new Fraction(new Literal("1÷1÷1"), new Literal("1×1×1"))
+				)
+			)
 		)
 	)
-)
 
 mutate = (node = root, levelsProcessed = 0)->
 	if node instanceof Fraction
