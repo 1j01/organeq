@@ -1,6 +1,10 @@
 # Organeq
 
-[Go to the thing](https://1j01.github.io/organeq/)
+Dynamically ever-expanding and ever-complicating expressions or equations
+
+## [➡ Go to the thing! ⬅](https://1j01.github.io/organeq/)
+
+(((🎋➕🌳)➖🎄)➗(🌲✖🌴))➗(((🌳➕🎋)➖🎄)➗(🌴✖🌲)) = 1️⃣
 
 ## License
 
@@ -10,10 +14,5 @@ MIT-licensed, see [LICENSE](LICENSE)
 
 You just need an HTTP server.
 
-<!-- `live-server` is included in `package.json` so if you have Node.js installed, you can `npm i` and run `npm start` -->
-
-<!-- or install it globally -->
-
-<!-- or.. -->
-
-if you have Node.js, you should be able to run `npx live-server` for a really nice auto-reloading one
+If you have Node.js, you can run `npx live-server` to install and start an auto-reloading HTTP server.
+It will also open the page in your default browser.
