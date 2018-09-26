@@ -15,11 +15,49 @@ class MathNode
 	constructor: ->
 		# @x = 0
 		# @y = 0
-		# @width = 0
-		# @height = 0
+		@width = 0
+		@height = 0
 		@children = []
 	update: ->
+		child.update() for child in @children
 	# draw: ->
+	# 	console.warn "draw() not implemented for #{@constructor.name}"
+
+class Parenthetical extends MathNode
+	constructor: (@expression)->
+		super()
+		@children.push(@expression)
+		@padding_for_parentheses = 1.4
+
+	update: ->
+		super()
+		@width = @expression.width + @padding_for_parentheses
+		@height = @expression.height
+
+	draw: ->
+		ctx.save()
+		ctx.rect(-@width/2, -@height/2, @width, @height)
+		ctx.clip()
+		ctx.beginPath()
+		curve_amount = 0.5
+		curve_control_points_inset = @height * 0.3
+		for i in [0..2]
+			ctx.save()
+			if i is 1
+				ctx.scale(-1, 1)
+			ctx.translate(-@width/2 + @padding_for_parentheses/2, 0)
+			ctx.moveTo(0, -@height/2)
+			ctx.bezierCurveTo(
+				-curve_amount, -@height/2+curve_control_points_inset,
+				-curve_amount, @height/2-curve_control_points_inset
+				0, @height/2,
+			)
+			ctx.restore()
+		ctx.lineWidth = 0.1
+		ctx.lineCap = "square" # extend further to get cut off by clip
+		ctx.stroke()
+		ctx.restore()
+		@expression.draw()
 
 class InfixBinaryOperator extends MathNode
 	constructor: (@lhs, @rhs)->
@@ -38,6 +76,8 @@ class InfixBinaryOperator extends MathNode
 		@height = 0
 
 	update: ->
+		super()
+
 		# TODO: restore external configurability of these now-computed properties?
 		# I could have vertical_X and horizontal_X for each, but maybe there's something better to do
 		@operand_separation_factor_to = if @vertical then 0.5 else 1
@@ -58,9 +98,6 @@ class InfixBinaryOperator extends MathNode
 		@operand_angle += (@operand_angle_to - @operand_angle) / 5
 		@symbol_angle += (@symbol_angle_to - @symbol_angle) / 3
 
-		@lhs.update()
-		@rhs.update()
-
 		# @width = lerp(
 		# 	Math.max(@lhs.width, @rhs.width)
 		# 	@lhs.width + @rhs.width
@@ -70,9 +107,11 @@ class InfixBinaryOperator extends MathNode
 		if @vertical
 			@width = Math.max(@lhs.width, @rhs.width)
 			# @height = @lhs.height + @rhs.height + @operand_separation_padding # except it's not centered; we'd have to calculate a bounding box x/y
+			# TODO: we do want to have it be centered
 			@height = Math.max(@lhs.height, @rhs.height) * 2 + @operand_separation_padding
 		else
 			# @width = @lhs.width + @rhs.width + @operand_separation_padding # except it's not centered; we'd have to calculate a bounding box x/y
+			# TODO: we do want to have it be centered
 			@width = Math.max(@lhs.width, @rhs.width) * 2 + @operand_separation_padding
 			@height = Math.max(@lhs.height, @rhs.height)
 
@@ -176,7 +215,12 @@ class Literal extends MathNode
 
 root = new Fraction(
 	new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
-	new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
+	new Parenthetical(
+		new Fraction(
+			new Fraction(new Literal("1×1÷1"), new Literal("1÷1×1"))
+			new Fraction(new Literal("1÷1÷1"), new Literal("1×1×1"))
+		)
+	)
 )
 
 mutate = (node = root, levelsProcessed = 0)->
