@@ -2,7 +2,7 @@
 # Organeq
 # An organically growing equation
 
-# NOTE: name should really be Organex or Organexp (at this point at least)
+# NOTE: name should really be Organex or Organexp at this point
 # although not to be confused with http://arxiv.org/abs/1608.03000
 # ("Neural Generation of Regular Expressions from Natural Language with Minimal Domain Knowledge")
 
@@ -13,8 +13,11 @@
 
 class MathNode
 	constructor: ->
-		@x = 0
-		@y = 0
+		# @x = 0
+		# @y = 0
+
+# TODO: maybe have a BinaryOperator class
+# with symbol_angle and angle (or operand_angle)
 
 class Fraction extends MathNode
 	constructor: (@divisor, @denominator)->
@@ -61,12 +64,17 @@ class Fraction extends MathNode
 		@denominator.draw()
 		ctx.restore()
 		
+		# TODO: restore external configurability of these now-computed properties?
+		# I could have vertical_X and horizontal_X for each, but maybe there's something better to do
 		@separation_to = if @vertical then 0.5 else 1
 		@separation_padding_to = if @vertical then 0.1 else 1
 		@stroke_length_to = if @vertical then Math.max(@denominator.width, @divisor.width) else 1.9
 		@stroke_angle_to = if @vertical then Math.PI / 2 else 0.2
 		@angle_to = if @vertical then Math.PI / 2 else 0
 
+		# TODO: a better/cleaner way of handling this animation stuff
+		# and, maybe bring in some spring while you're at it
+		# if it's abstracted properly, adding velocity shouldn't be a problem :)
 		@separation += (@separation_to - @separation) / 20
 		@separation_padding += (@separation_padding_to - @separation_padding) / 20
 		@angle += (@angle_to - @angle) / 20
