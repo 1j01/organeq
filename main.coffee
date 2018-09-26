@@ -15,77 +15,93 @@ class MathNode
 	constructor: ->
 		# @x = 0
 		# @y = 0
+		@children = []
 
-# TODO: maybe have a BinaryOperator class
-# with symbol_angle and angle (or operand_angle)
-
-class Fraction extends MathNode
-	constructor: (@divisor, @denominator)->
+class InfixBinaryOperator extends MathNode
+	constructor: (@lhs, @rhs)->
 		super()
+		@operand_angle = 0.2
+		@operand_angle_to = @operand_angle
+		@operand_separation_factor = 0
+		@operand_separation_factor_to = 1
+		@operand_separation_padding = 0
+		@operand_separation_padding_to = @operand_separation_padding
 
-		@angle = 0.2
-		@angle_to = @angle
-		@separation = 0
-		@separation_padding = 0
-		@separation_padding_to = @separation_padding
-		@separation_to = 1
-
-		@stroke_length = 0
-		@stroke_length_to = @stroke_length
-		@stroke_angle = 0
-		@stroke_angle_to = @angle
+		@symbol_angle = 0
+		@symbol_angle_to = @operand_angle
 
 	draw: ->
+		# TODO: restore external configurability of these now-computed properties?
+		# I could have vertical_X and horizontal_X for each, but maybe there's something better to do
+		@operand_separation_factor_to = if @vertical then 0.5 else 1
+		@operand_separation_padding_to = if @vertical then 0.1 else 1
+		@symbol_angle_to = if @vertical then Math.PI / 2 else 0.2
+		@operand_angle_to = if @vertical then Math.PI / 2 else 0
+
+		# TODO: a better/cleaner way of handling this animation stuff
+		# and, maybe bring in some spring while you're at it
+		# if it's abstracted properly, adding velocity shouldn't be a problem :)
+		@operand_separation_factor += (@operand_separation_factor_to - @operand_separation_factor) / 20
+		@operand_separation_padding += (@operand_separation_padding_to - @operand_separation_padding) / 20
+		@operand_angle += (@operand_angle_to - @operand_angle) / 20
+		@symbol_angle += (@symbol_angle_to - @symbol_angle) / 20
+		# faster, arbitrarily (thoughtlessly/carelessly) but nicely varied transition speeds (divisors here):
+		# @operand_separation_factor += (@operand_separation_factor_to - @operand_separation_factor) / 5
+		# @operand_separation_padding += (@operand_separation_padding_to - @operand_separation_padding) / 8
+		# @operand_angle += (@operand_angle_to - @operand_angle) / 5
+		# @stroke_length += (@stroke_length_to - @stroke_length) / 9
+		# @symbol_angle += (@symbol_angle_to - @symbol_angle) / 3
 		
+		@drawOperator()
+
+		
+		ctx.save()
+		#ctx.translate(-@operand_separation_factor/2, 0)
+		ctx.rotate(@operand_angle)
+		ctx.translate(-@lhs.width/2 * @operand_separation_factor - @operand_separation_padding/2, 0)
+		ctx.rotate(-@operand_angle)
+		@lhs.draw()
+		ctx.restore()
+		
+		ctx.save()
+		#ctx.translate(@operand_separation_factor/2, 0)
+		ctx.rotate(@operand_angle)
+		ctx.translate(@rhs.width/2 * @operand_separation_factor + @operand_separation_padding/2, 0)
+		ctx.rotate(-@operand_angle)
+		@rhs.draw()
+		ctx.restore()
+
+
+class Fraction extends InfixBinaryOperator
+	constructor: (@divisor, @denominator)->
+		super()
+		@children.push(
+			@lhs = @divisor
+			@rhs = @denominator
+		) # look how fancy i'm being
+		# isn't it
+		# totally worth it?
+		(no)
+		
+		@stroke_length = 0
+		@stroke_length_to = @stroke_length
+
+	draw: ->
+		super()
+		@stroke_length_to = if @vertical then Math.max(@denominator.width, @divisor.width) else 1.9
+		@stroke_length += (@stroke_length_to - @stroke_length) / 20
+
+	drawOperator: ->
 		ctx.save()
 		stroke_width = 0.1
 		#ctx.fillRect(-stroke_width/2, -1, stroke_width, 1.5)
 		ctx.lineWidth = stroke_width
 		ctx.beginPath()
-		ctx.rotate(@stroke_angle)
+		ctx.rotate(@symbol_angle)
 		ctx.moveTo(0, -@stroke_length/2)
 		ctx.lineTo(0, @stroke_length/2)
 		ctx.stroke()
 		ctx.restore()
-		
-		ctx.save()
-		#ctx.translate(-@separation/2, 0)
-		ctx.rotate(@angle)
-		ctx.translate(-@divisor.width/2 * @separation - @separation_padding/2, 0)
-		ctx.rotate(-@angle)
-		@divisor.draw()
-		ctx.restore()
-		
-		ctx.save()
-		#ctx.translate(@separation/2, 0)
-		ctx.rotate(@angle)
-		ctx.translate(@denominator.width/2 * @separation + @separation_padding/2, 0)
-		ctx.rotate(-@angle)
-		@denominator.draw()
-		ctx.restore()
-		
-		# TODO: restore external configurability of these now-computed properties?
-		# I could have vertical_X and horizontal_X for each, but maybe there's something better to do
-		@separation_to = if @vertical then 0.5 else 1
-		@separation_padding_to = if @vertical then 0.1 else 1
-		@stroke_length_to = if @vertical then Math.max(@denominator.width, @divisor.width) else 1.9
-		@stroke_angle_to = if @vertical then Math.PI / 2 else 0.2
-		@angle_to = if @vertical then Math.PI / 2 else 0
-
-		# TODO: a better/cleaner way of handling this animation stuff
-		# and, maybe bring in some spring while you're at it
-		# if it's abstracted properly, adding velocity shouldn't be a problem :)
-		@separation += (@separation_to - @separation) / 20
-		@separation_padding += (@separation_padding_to - @separation_padding) / 20
-		@angle += (@angle_to - @angle) / 20
-		@stroke_length += (@stroke_length_to - @stroke_length) / 20
-		@stroke_angle += (@stroke_angle_to - @stroke_angle) / 20
-		# faster, arbitrarily (thoughtlessly/carelessly) but nicely varied transition speeds (divisors here):
-		# @separation += (@separation_to - @separation) / 5
-		# @separation_padding += (@separation_padding_to - @separation_padding) / 8
-		# @angle += (@angle_to - @angle) / 5
-		# @stroke_length += (@stroke_length_to - @stroke_length) / 9
-		# @stroke_angle += (@stroke_angle_to - @stroke_angle) / 3
 
 
 class Literal extends MathNode
@@ -107,8 +123,8 @@ root = new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
 
 mutate = (node = root, levelsProcessed = 0)->
 	if node instanceof Fraction
-		# node.angle_to = if levelsProcessed % 2 is 1 then 0.2 else Math.PI / 2
-		# node.angle_to = if Math.random() < 0.5 then 0.2 else Math.PI / 2
+		# node.operand_angle_to = if levelsProcessed % 2 is 1 then 0.2 else Math.PI / 2
+		# node.operand_angle_to = if Math.random() < 0.5 then 0.2 else Math.PI / 2
 		node.vertical = Math.random() < 0.5
 	for subnode in node.children
 		mutate subnode, levelsProcessed + 1
