@@ -164,8 +164,10 @@ class Fraction extends InfixBinaryOperator
 	constructor: (@divisor, @denominator)->
 		super()
 		
-		@stroke_length = 1.9
-		@stroke_length_to = @stroke_length
+		@lhs_stroke_length = 0
+		@lhs_stroke_length_to = @lhs_stroke_length
+		@rhs_stroke_length = 0
+		@rhs_stroke_length_to = @rhs_stroke_length
 
 	Object.defineProperties @prototype,
 		divisor:
@@ -177,24 +179,24 @@ class Fraction extends InfixBinaryOperator
 
 	update: ->
 		super()
-
-		###
-		@stroke_length_to =
-			if @vertical
-				Math.max(@denominator.width, @divisor.width, 1) + .9
-			else
-				Math.max(@denominator.height, @divisor.height, 1) + .9
-
-		# @stroke_length += (@stroke_length_to - @stroke_length) / 20
-		@stroke_length += (@stroke_length_to - @stroke_length) / 9
+		if @vertical
+			@lhs_stroke_length_to = Math.max(@denominator.bb_left, @divisor.bb_left, 1) + .9/2
+			@rhs_stroke_length_to = Math.max(@denominator.bb_right, @divisor.bb_right, 1) + .9/2
+		else
+			@stroke_length_to = Math.max(@denominator.bb_top + @denominator.bb_bottom, @divisor.bb_top + @divisor.bb_bottom, 1) + .9/2
+	
+		slowness = 9 # 20
+		@lhs_stroke_length += (@lhs_stroke_length_to - @lhs_stroke_length) / slowness
+		@rhs_stroke_length += (@rhs_stroke_length_to - @rhs_stroke_length) / slowness
 
 		# TODO: smooth
 		# if Math.random() < 0.5
 		if @vertical
-			@width = Math.max(@width, @stroke_length)
+			@bb_left = Math.max(@bb_left, @lhs_stroke_length)
+			@bb_right = Math.max(@bb_right, @rhs_stroke_length)
 		else
-			@height = Math.max(@height, @stroke_length)
-		###
+			@bb_top = Math.max(@bb_top, @lhs_stroke_length)
+			@bb_bottom = Math.max(@bb_bottom, @rhs_stroke_length)
 
 	draw: ->
 		super()
