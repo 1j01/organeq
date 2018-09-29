@@ -268,25 +268,32 @@ assignParents = (node)->
 	node.parent = null # for root; must be after assigning all children's parent props
 	return
 
-mutate = (node)->
+findAllNodes = (node)->
+	array = [node]
+	for subnode in node.children
+		array = array.concat(findAllNodes(subnode))
+	array
+
+findAllNodesOfType = (Class, node)->
+	node for node in findAllNodes(node) when node instanceof Class 
+
+mutateTree = (root)->
 	# mutate the abstract syntax tree while retaining equality/equivalence
 
-	# console.group("mutate", node)
+	literals = findAllNodesOfType(Literal, root)
+
 	# if Math.random() < 0.3
 	# 	return
-	if node instanceof Literal
+
+	for literal in literals
 		new_fraction = new Fraction(
-			node
+			literal
 			new Literal(1)
 		)
 		new_parenthetical = new Parenthetical(new_fraction)
 		new_fraction.parent = new_parenthetical
-		replace(node, new_parenthetical)
-	else
-		for subnode in node.children
-			mutate subnode
-	# console.groupEnd("mutate", node)
-	return
+		replace(literal, new_parenthetical)
+
 
 alternateAlignments = (node, fractionLevelsProcessed)->
 	if node instanceof Fraction
@@ -301,7 +308,7 @@ canvas.onclick = (e)->
 	e.preventDefault()
 	# console.group("ONCLICK EVENT")
 	assignParents(root)
-	mutate(root)
+	mutateTree(root)
 	# assignParents(root)
 	alternateAlignments(root, 0)
 	# console.log("the root is now", root)
