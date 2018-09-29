@@ -183,7 +183,12 @@ class Fraction extends InfixBinaryOperator
 			@lhs_stroke_length_to = Math.max(@denominator.bb_left, @divisor.bb_left, 1) + .9/2
 			@rhs_stroke_length_to = Math.max(@denominator.bb_right, @divisor.bb_right, 1) + .9/2
 		else
-			@stroke_length_to = Math.max(@denominator.bb_top + @denominator.bb_bottom, @divisor.bb_top + @divisor.bb_bottom, 1) + .9/2
+			@lhs_stroke_length_to =
+			@rhs_stroke_length_to =
+				Math.max(
+					@denominator.bb_top + @denominator.bb_bottom
+					@divisor.bb_top + @divisor.bb_bottom, 1
+				) + .9/2
 	
 		slowness = 9 # 20
 		@lhs_stroke_length += (@lhs_stroke_length_to - @lhs_stroke_length) / slowness
