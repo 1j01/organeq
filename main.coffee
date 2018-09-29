@@ -9,17 +9,30 @@
 # TODO: bounding box (&etc.) system(s/z)
 # maybe use MathJax? it's supposed to have modular input/output
 
+debug_id_counter = 1
+
 class MathNode
 	constructor: ->
+		@debug_id = debug_id_counter++
 		# @x = 0
 		# @y = 0
 		@width = 0
 		@height = 0
 		@children = []
+		@parent = null
 	update: ->
 		child.update() for child in @children
 	# draw: ->
 	# 	console.warn "draw() not implemented for #{@constructor.name}"
+	replace: (replacement)->
+		console.log "replace", @, "with", replacement
+		console.log "-> replace @parent.children index", @parent.children.indexOf(@)
+		@parent.children[@parent.children.indexOf(@)] = replacement
+		for k, v of @parent when v is @
+			@parent[k] = replacement
+			console.log "set #{k} to", replacement
+		replacement.parent = @parent
+		# @parent = null
 
 class Parenthetical extends MathNode
 	constructor: (@expression)->
@@ -27,6 +40,11 @@ class Parenthetical extends MathNode
 		@children.push(@expression)
 		@padding_for_parentheses = 1.4
 
+	Object.defineProperties @prototype,
+		children:
+			get: -> [@expression]
+			set: ([@expression])->
+	
 	update: ->
 		super()
 		@width = @expression.width + @padding_for_parentheses
@@ -39,6 +57,8 @@ class Parenthetical extends MathNode
 		ctx.beginPath()
 		curve_amount = 0.5 # TODO: base on height
 		curve_control_points_inset = @height * 0.3
+		# TODO: use fill instead of stroke, and taper the bow
+		# get rid of the clip() and do that geometry more directly
 		for i in [0..2]
 			ctx.save()
 			if i is 1
@@ -77,6 +97,8 @@ class InfixBinaryOperator extends MathNode
 		children:
 			get: -> [@lhs, @rhs]
 			set: ([@lhs, @rhs])->
+				# @lhs.parent = @
+				# @rhs.parent = @
 	
 	update: ->
 		super()
@@ -218,43 +240,71 @@ class Literal extends MathNode
 		ctx.restore()
 
 root =
-	new Parenthetical(
-		new Fraction(
-			new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
-			new Parenthetical(
-				new Fraction(
-					new Fraction(new Literal("1×1÷1"), new Literal("1÷1×1"))
-					new Fraction(new Literal("1÷1÷1"), new Literal("1×1×1"))
-				)
-			)
-		)
-	)
+	# new Parenthetical(
+	# 	new Fraction(
+	# 		new Fraction(new Literal("1−1+1"), new Literal("1+1−1"))
+	# 		new Parenthetical(
+	# 			new Fraction(
+	# 				new Fraction(new Literal("1×1÷1"), new Literal("1÷1×1"))
+	# 				new Fraction(new Literal("1÷1÷1"), new Literal("1×1×1"))
+	# 			)
+	# 		)
+	# 	)
+	# )
+	new Literal 1
 
-mutate = (node = root)->
-	if node instanceof Fraction
-		if Math.random() < 0.2
-			if node.lhs instanceof Literal
-				new_divisor = new Fraction(
-					node.lhs
-					node.lhs # TODO: maybe copy
-				)
-				new_divisor = new Parenthetical(new_divisor)
-				node.divisor = new_divisor
+# TODO: refactor into single non-object-oriented replace function that handles both cases (root and non-root)
+root.replace = (replacement)->
+	replacement.replace = root.replace
+	replacement.parent = null
+	root = replacement
+
+assignParents = (node)->
+	for subnode in node.children
+		assignParents subnode
+		subnode.parent = node # must be after recursion for root parent nullification
+		subnode.replace = MathNode::replace # this root.replace business seemed cute but really spiraled into complexity (normally I wouldn't have used that pattern but it seemed so appropriate and clear cut)
+	node.parent = null # for root; must be after assigning all children's parent props
+	return
+
+mutate = (node)->
+	# console.log("mutate", node)
+	console.group("mutate", node)
+	# if Math.random() < 0.2
+	if node instanceof Literal
+		new_fraction = new Fraction(
+			node
+			new Literal(node.value)
+		)
+		new_parenthetical = new Parenthetical(new_fraction)
+		new_fraction.parent = new_parenthetical
+		node.replace(new_parenthetical)
+		console.groupEnd("mutate", node)
+		return
 	for subnode in node.children
 		mutate subnode
+	return
 
 alternateAlignments = (node, fractionLevelsProcessed)->
 	if node instanceof Fraction
 		node.vertical = fractionLevelsProcessed % 2 is 0
 	for subnode in node.children
 		alternateAlignments subnode, fractionLevelsProcessed + (if node instanceof Fraction then 1 else 0)
+	return
 
 alternateAlignments(root, 0)
 
 canvas.onclick = (e)->
-	mutate(root)
-	alternateAlignments(root, 0)
 	e.preventDefault()
+	# console.log("<ONCLICK> --------------------------------")
+	console.group("ONCLICK EVENT")
+	assignParents(root)
+	mutate(root)
+	assignParents(root)
+	alternateAlignments(root, 0)
+	console.log("the root is now", root)
+	# console.log("-------------------------------- </ONCLICK>")
+	console.groupEnd("ONCLICK EVENT")
 canvas.onselectstart = (e)->
 	e.preventDefault()
 
