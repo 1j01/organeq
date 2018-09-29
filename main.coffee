@@ -14,10 +14,10 @@ debug_id_counter = 1
 class MathNode
 	constructor: ->
 		@debug_id = debug_id_counter++
-		# @x = 0
-		# @y = 0
-		@width = 0
-		@height = 0
+		@bb_left = 0
+		@bb_top = 0
+		@bb_right = 0
+		@bb_bottom = 0
 		@children = []
 		@parent = null
 	update: ->
@@ -29,7 +29,7 @@ class Parenthetical extends MathNode
 	constructor: (@expression)->
 		super()
 		@children.push(@expression)
-		@padding_for_parentheses = 1.4
+		@padding_for_parentheses = 1.4 / 2
 
 	Object.defineProperties @prototype,
 		children:
@@ -38,30 +38,36 @@ class Parenthetical extends MathNode
 	
 	update: ->
 		super()
-		@width = @expression.width + @padding_for_parentheses
-		@height = @expression.height
+		@bb_left = @expression.bb_left + @padding_for_parentheses
+		@bb_right = @expression.bb_right + @padding_for_parentheses
+		@bb_top = @expression.bb_top
+		@bb_bottom = @expression.bb_bottom
 
 	draw: ->
+		width = @bb_left + @bb_right
+		height = @bb_top + @bb_bottom
 		ctx.save()
-		ctx.rect(-@width/2, -@height/2, @width, @height)
+		ctx.rect(-@bb_left, -@bb_top, width, height)
 		ctx.clip()
 		ctx.beginPath()
 		curve_amount = 0.5 # TODO: base on height
-		curve_control_points_inset = @height * 0.3
+		curve_control_points_inset = height * 0.3
 		# TODO: use fill instead of stroke, and taper the bow
 		# get rid of the clip() and do that geometry more directly
-		for i in [0..2]
+		draw_paren = (x, is_left)=>
 			ctx.save()
-			if i is 1
+			if is_left
 				ctx.scale(-1, 1)
-			ctx.translate(-@width/2 + @padding_for_parentheses/2, 0)
-			ctx.moveTo(0, -@height/2)
+			ctx.translate(-@bb_left + @padding_for_parentheses/2, 0)
+			ctx.moveTo(0, -@bb_top)
 			ctx.bezierCurveTo(
 				-curve_amount, -@height/2+curve_control_points_inset,
 				-curve_amount, @height/2-curve_control_points_inset
 				0, @height/2,
 			)
 			ctx.restore()
+		draw_paren(-@bb_left, true)
+		draw_paren(-@bb_right, false)
 		ctx.lineWidth = 0.1
 		ctx.lineCap = "square" # extend further to get cut off by clip
 		ctx.stroke()
@@ -80,9 +86,6 @@ class InfixBinaryOperator extends MathNode
 
 		@symbol_angle = 0
 		@symbol_angle_to = @operand_angle
-
-		@width = 0
-		@height = 0
 
 	Object.defineProperties @prototype,
 		children:
@@ -121,15 +124,15 @@ class InfixBinaryOperator extends MathNode
 		# )
 		# TODO: smooth
 		if @vertical
-			@width = Math.max(@lhs.width, @rhs.width)
-			# @height = @lhs.height + @rhs.height + @operand_separation_padding # except it's not centered; we'd have to calculate a bounding box x/y
-			# TODO: we do want to have it be centered
-			@height = Math.max(@lhs.height, @rhs.height) * 2 + @operand_separation_padding
+			@bb_left = Math.max(@lhs.bb_left, @rhs.bb_left)
+			@bb_right = Math.max(@lhs.bb_right, @rhs.bb_right)
+			@bb_top = Math.max(@lhs.bb_top, @rhs.bb_top) + @operand_separation_padding
+			@bb_bottom = Math.max(@lhs.bb_bottom, @rhs.bb_bottom) + @operand_separation_padding
 		else
-			# @width = @lhs.width + @rhs.width + @operand_separation_padding # except it's not centered; we'd have to calculate a bounding box x/y
-			# TODO: we do want to have it be centered
-			@width = Math.max(@lhs.width, @rhs.width) * 2 + @operand_separation_padding
-			@height = Math.max(@lhs.height, @rhs.height)
+			@bb_left = Math.max(@lhs.bb_left, @rhs.bb_left) + @operand_separation_padding
+			@bb_right = Math.max(@lhs.bb_right, @rhs.bb_right) + @operand_separation_padding
+			@bb_top = Math.max(@lhs.bb_top, @rhs.bb_top)
+			@bb_bottom = Math.max(@lhs.bb_bottom, @rhs.bb_bottom)
 
 	draw: ->
 		
@@ -140,7 +143,7 @@ class InfixBinaryOperator extends MathNode
 		#ctx.translate(-@operand_separation_factor/2, 0)
 		ctx.rotate(@operand_angle)
 		# TODO: smooth
-		operand_dimension = if @vertical then @lhs.height else @lhs.width/2 # TODO: why /2?
+		operand_dimension = if @vertical then @lhs.bb_top + @lhs.bb_bottom else (@lhs.bb_left + @lhs.bb_right)/2 # TODO: why /2?
 		ctx.translate(-operand_dimension * @operand_separation_factor - @operand_separation_padding/2, 0)
 		ctx.rotate(-@operand_angle)
 		@lhs.draw()
@@ -150,7 +153,7 @@ class InfixBinaryOperator extends MathNode
 		#ctx.translate(@operand_separation_factor/2, 0)
 		ctx.rotate(@operand_angle)
 		# TODO: smooth
-		operand_dimension = if @vertical then @rhs.height else @rhs.width/2 # TODO: why /2?
+		operand_dimension = if @vertical then @rhs.bb_top + @rhs.bb_bottom else (@rhs.bb_left + @rhs.bb_right)/2 # TODO: why /2?
 		ctx.translate(operand_dimension * @operand_separation_factor + @operand_separation_padding/2, 0)
 		ctx.rotate(-@operand_angle)
 		@rhs.draw()
@@ -161,7 +164,7 @@ class Fraction extends InfixBinaryOperator
 	constructor: (@divisor, @denominator)->
 		super()
 		
-		@stroke_length = 0
+		@stroke_length = 1.9
 		@stroke_length_to = @stroke_length
 
 	Object.defineProperties @prototype,
@@ -175,6 +178,7 @@ class Fraction extends InfixBinaryOperator
 	update: ->
 		super()
 
+		###
 		@stroke_length_to =
 			if @vertical
 				Math.max(@denominator.width, @divisor.width, 1) + .9
@@ -190,6 +194,7 @@ class Fraction extends InfixBinaryOperator
 			@width = Math.max(@width, @stroke_length)
 		else
 			@height = Math.max(@height, @stroke_length)
+		###
 
 	draw: ->
 		super()
@@ -216,8 +221,6 @@ class Fraction extends InfixBinaryOperator
 class Literal extends MathNode
 	constructor: (@value)->
 		super()
-		@width = 0
-		@height = 0
 	draw: ->
 		font_size = 100
 		ctx.textAlign = "center"
@@ -226,8 +229,12 @@ class Literal extends MathNode
 		ctx.save()
 		ctx.scale(1/font_size, 1/font_size)
 		ctx.fillText(@value, 0, 0)
-		@width = ctx.measureText(@value).width / font_size
-		@height = 1.2 # .2 = padding
+		width = ctx.measureText(@value).width / font_size
+		height = 1.2 # .2 = padding
+		@bb_left = width / 2
+		@bb_right = width / 2
+		@bb_top = height / 2
+		@bb_bottom = height / 2
 		ctx.restore()
 
 root =
