@@ -24,15 +24,6 @@ class MathNode
 		child.update() for child in @children
 	# draw: ->
 	# 	console.warn "draw() not implemented for #{@constructor.name}"
-	replace: (replacement)->
-		# console.log "replace", @, "with", replacement
-		# console.log "-> replace @parent.children index", @parent.children.indexOf(@)
-		@parent.children[@parent.children.indexOf(@)] = replacement
-		for k, v of @parent when v is @
-			@parent[k] = replacement
-			# console.log "set @parent.#{k} to", replacement
-		replacement.parent = @parent
-		# @parent = null
 
 class Parenthetical extends MathNode
 	constructor: (@expression)->
@@ -253,24 +244,36 @@ root =
 	# )
 	new Literal 1
 
-# TODO: refactor into single non-object-oriented replace function that handles both cases (root and non-root)
-root.replace = (replacement)->
-	replacement.replace = root.replace
-	replacement.parent = null
-	root = replacement
+replace = (oldNode, newNode)->
+	# console.log "replace", oldNode, "with", newNode
+	if oldNode is root
+		newNode.parent = null
+		root = newNode
+	else
+		index = oldNode.parent.children.indexOf(oldNode)
+		# console.log "-> replace oldNode.parent.children[#{index}]"
+		oldNode.parent.children[index] = newNode
+		for k, v of oldNode.parent when v is oldNode
+			oldNode.parent[k] = newNode
+			# console.log "set oldNode.parent.#{k} to", newNode
+		newNode.parent = oldNode.parent
+	oldNode.parent = null
 
+# this is a hack. ideally the parent prop would always be consistent,
+# and not need to be made consistent in a step
 assignParents = (node)->
 	for subnode in node.children
 		assignParents subnode
 		subnode.parent = node # must be after recursion for root parent nullification
-		subnode.replace = MathNode::replace # this root.replace business seemed cute but really spiraled into complexity (normally I wouldn't have used that pattern but it seemed so appropriate and clear cut)
 	node.parent = null # for root; must be after assigning all children's parent props
 	return
 
 mutate = (node)->
 	# mutate the abstract syntax tree while retaining equality/equivalence
+
 	# console.group("mutate", node)
-	# if Math.random() < 0.2
+	# if Math.random() < 0.3
+	# 	return
 	if node instanceof Literal
 		new_fraction = new Fraction(
 			node
@@ -278,7 +281,7 @@ mutate = (node)->
 		)
 		new_parenthetical = new Parenthetical(new_fraction)
 		new_fraction.parent = new_parenthetical
-		node.replace(new_parenthetical)
+		replace(node, new_parenthetical)
 	else
 		for subnode in node.children
 			mutate subnode
