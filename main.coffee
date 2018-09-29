@@ -25,12 +25,12 @@ class MathNode
 	# draw: ->
 	# 	console.warn "draw() not implemented for #{@constructor.name}"
 	replace: (replacement)->
-		console.log "replace", @, "with", replacement
-		console.log "-> replace @parent.children index", @parent.children.indexOf(@)
+		# console.log "replace", @, "with", replacement
+		# console.log "-> replace @parent.children index", @parent.children.indexOf(@)
 		@parent.children[@parent.children.indexOf(@)] = replacement
 		for k, v of @parent when v is @
 			@parent[k] = replacement
-			console.log "set #{k} to", replacement
+			# console.log "set @parent.#{k} to", replacement
 		replacement.parent = @parent
 		# @parent = null
 
@@ -269,7 +269,7 @@ assignParents = (node)->
 
 mutate = (node)->
 	# mutate the abstract syntax tree while retaining equality/equivalence
-	console.group("mutate", node)
+	# console.group("mutate", node)
 	# if Math.random() < 0.2
 	if node instanceof Literal
 		new_fraction = new Fraction(
@@ -279,7 +279,7 @@ mutate = (node)->
 		new_parenthetical = new Parenthetical(new_fraction)
 		new_fraction.parent = new_parenthetical
 		node.replace(new_parenthetical)
-		console.groupEnd("mutate", node)
+		# console.groupEnd("mutate", node)
 		return
 	for subnode in node.children
 		mutate subnode
@@ -296,15 +296,13 @@ alternateAlignments(root, 0)
 
 canvas.onclick = (e)->
 	e.preventDefault()
-	# console.log("<ONCLICK> --------------------------------")
-	console.group("ONCLICK EVENT")
+	# console.group("ONCLICK EVENT")
 	assignParents(root)
 	mutate(root)
-	assignParents(root)
+	# assignParents(root)
 	alternateAlignments(root, 0)
-	console.log("the root is now", root)
-	# console.log("-------------------------------- </ONCLICK>")
-	console.groupEnd("ONCLICK EVENT")
+	# console.log("the root is now", root)
+	# console.groupEnd("ONCLICK EVENT")
 canvas.onselectstart = (e)->
 	e.preventDefault()
 
