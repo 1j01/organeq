@@ -268,6 +268,15 @@ assignParents = (node)->
 	node.parent = null # for root; must be after assigning all children's parent props
 	return
 
+shuffleArrayInPlace = (array)->
+    i = array.length
+    while --i > 0
+        j = ~~(Math.random() * (i + 1))
+        temp = array[j]
+        array[j] = array[i]
+        array[i] = temp
+    array
+
 findAllNodes = (node)->
 	array = [node]
 	for subnode in node.children
@@ -282,8 +291,13 @@ mutateTree = (root)->
 
 	literals = findAllNodesOfType(Literal, root)
 
-	# if Math.random() < 0.3
-	# 	return
+	shuffleArrayInPlace(literals)
+
+	min = 1
+	max = Math.min(5, literals.length)
+	number_of_literals_to_mutate = Math.max(min, ~~(Math.random() * (max + 1)))
+	console.log(number_of_literals_to_mutate)
+	literals = literals.slice(0, number_of_literals_to_mutate)
 
 	for literal in literals
 		new_fraction = new Fraction(
