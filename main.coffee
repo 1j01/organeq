@@ -268,13 +268,13 @@ assignParents = (node)->
 	return
 
 mutate = (node)->
-	# console.log("mutate", node)
+	# mutate the abstract syntax tree while retaining equality/equivalence
 	console.group("mutate", node)
 	# if Math.random() < 0.2
 	if node instanceof Literal
 		new_fraction = new Fraction(
 			node
-			new Literal(node.value)
+			new Literal(1)
 		)
 		new_parenthetical = new Parenthetical(new_fraction)
 		new_fraction.parent = new_parenthetical
