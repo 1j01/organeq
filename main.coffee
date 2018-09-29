@@ -214,8 +214,8 @@ class Fraction extends InfixBinaryOperator
 		ctx.lineWidth = stroke_width
 		ctx.beginPath()
 		ctx.rotate(@symbol_angle)
-		ctx.moveTo(0, -@stroke_length/2)
-		ctx.lineTo(0, @stroke_length/2)
+		ctx.moveTo(0, -@lhs_stroke_length)
+		ctx.lineTo(0, @rhs_stroke_length)
 		ctx.stroke()
 		ctx.restore()
 
