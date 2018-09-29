@@ -296,7 +296,7 @@ mutateTree = (root)->
 	min = 1
 	max = Math.min(5, literals.length)
 	number_of_literals_to_mutate = Math.max(min, ~~(Math.random() * (max + 1)))
-	console.log(number_of_literals_to_mutate)
+	# console.log("number_of_literals_to_mutate:", number_of_literals_to_mutate)
 	literals = literals.slice(0, number_of_literals_to_mutate)
 
 	for literal in literals
