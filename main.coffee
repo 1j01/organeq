@@ -10,9 +10,12 @@
 # maybe use MathJax? it's supposed to have modular input/output
 
 debug_draw_checkbox = document.getElementById("debug-draw")
+debug_draw_checkbox_label = debug_draw_checkbox.parentElement
 debug_draw_enabled = no
 do debug_draw_checkbox.onchange = ->
 	debug_draw_enabled = debug_draw_checkbox.checked
+debug_draw_checkbox_label.onselectstart = (e)->
+	e.preventDefault()
 
 class MathNode
 	debug_id_counter = 1
