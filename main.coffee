@@ -12,13 +12,24 @@
 debug_draw_checkbox = document.getElementById("debug-draw")
 debug_draw_checkbox_label = debug_draw_checkbox.parentElement
 debug_draw_enabled = no
+debug_draw_3d_checkbox = document.getElementById("debug-draw-3d")
+debug_draw_3d_checkbox_label = debug_draw_3d_checkbox.parentElement
+debug_draw_3d_enabled = no
 do debug_draw_checkbox.onchange = ->
 	debug_draw_enabled = debug_draw_checkbox.checked
+do debug_draw_3d_checkbox.onchange = ->
+	debug_draw_3d_enabled = debug_draw_3d_checkbox.checked
 debug_draw_checkbox_label.onselectstart = (e)->
+	e.preventDefault()
+debug_draw_3d_checkbox_label.onselectstart = (e)->
 	e.preventDefault()
 
 time = 0
 debug_draw_enabledness = 0
+debug_draw_3d_enabledness = 0
+
+lerp = (x, a, b)->
+	a + (b - a) * x
 
 class MathNode
 	debug_id_counter = 1
@@ -55,10 +66,10 @@ class MathNode
 		# ctx.translate(cos(@debug_id*time/100)/10, sin(@debug_id*time/100)/10)
 		# ctx.scale(1+cos(@debug_id+time/100)/10, 1+sin(@debug_id+time/100)/10)
 		# ctx.transform(1, cos(time/100)/100, sin(time/100)/100, 1, 0, 0)
-		for i in [0..10]
+		for i in [((1-debug_draw_3d_enabledness) * 9)..10]
 			ctx.translate(
-				cos(time/100)/100*debug_draw_enabledness
-				sin(time/100)/100*debug_draw_enabledness
+				cos(time/100)/100*debug_draw_3d_enabledness
+				sin(time/100)/100*debug_draw_3d_enabledness
 			)
 			ctx.save()
 			ctx.beginPath()
@@ -66,9 +77,9 @@ class MathNode
 			ctx.fillStyle = debug_colors[@debug_id] ? "rgba(255, 0, 125, 0.3)"
 			ctx.strokeStyle = debug_colors[@debug_id] ? "rgba(255, 125, 200, 0.7)"
 			ctx.lineWidth = 0.03
-			ctx.globalAlpha = 0.3 / (if i is 10 then 1 else 10) #* Math.exp(1/2, debug_draw_enabledness)
+			ctx.globalAlpha = 0.3 / (if i is 10 then 1 else lerp(debug_draw_3d_enabledness, 1, 10)) * debug_draw_enabledness
 			ctx.fill()
-			ctx.globalAlpha = 0.8 / (if i is 10 then 3 else 5) #* Math.exp(1/2, debug_draw_enabledness)
+			ctx.globalAlpha = 0.8 / (if i is 10 then 3 else lerp(debug_draw_3d_enabledness, 1, 5)) * debug_draw_enabledness
 			ctx.stroke()
 			ctx.restore()
 
@@ -392,7 +403,8 @@ canvas.onselectstart = (e)->
 
 animate ->
 	time += 1
-	debug_draw_enabledness += (debug_draw_enabled - debug_draw_enabledness) / 8
+	debug_draw_enabledness += (debug_draw_enabled - debug_draw_enabledness) / 12
+	debug_draw_3d_enabledness += ((debug_draw_3d_enabled and debug_draw_enabled) - debug_draw_3d_enabledness) / 8
 
 	{width: w, height: h} = canvas
 	
