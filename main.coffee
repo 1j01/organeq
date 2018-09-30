@@ -52,6 +52,7 @@ class Parenthetical extends MathNode
 		super()
 		@children.push(@expression)
 		@padding_for_parentheses = 0.7
+		@vertical_padding = 0.1
 
 	Object.defineProperties @prototype,
 		children:
@@ -62,8 +63,8 @@ class Parenthetical extends MathNode
 		super()
 		@bb_left = @expression.bb_left + @padding_for_parentheses
 		@bb_right = @expression.bb_right + @padding_for_parentheses
-		@bb_top = @expression.bb_top
-		@bb_bottom = @expression.bb_bottom
+		@bb_top = @expression.bb_top + @vertical_padding
+		@bb_bottom = @expression.bb_bottom + @vertical_padding
 
 	draw: ->
 		super()
