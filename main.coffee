@@ -47,9 +47,9 @@ class MathNode
 		if debug_draw_enabled
 			@debugDraw()
 	debugDraw: ->
-		ctx.translate(cos(@debug_id*time/100)/10, sin(@debug_id*time/100)/10)
-		# ctx.transform(1, 1, 0, 1, 0, 0)
+		# ctx.translate(cos(@debug_id*time/100)/10, sin(@debug_id*time/100)/10)
 		ctx.scale(1+cos(@debug_id*time/100)/10, 1+sin(@debug_id*time/100)/10)
+		# ctx.transform(1, 0, 0, 1, 0, 0)
 		ctx.save()
 		width = @bb_left + @bb_right
 		height = @bb_top + @bb_bottom
