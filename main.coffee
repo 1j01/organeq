@@ -10,7 +10,7 @@
 # maybe use MathJax? it's supposed to have modular input/output
 
 debug_id_counter = 1
-debug_draw_enabled = yes
+debug_draw_enabled = no
 
 class MathNode
 	constructor: ->
@@ -45,7 +45,7 @@ class Parenthetical extends MathNode
 	constructor: (@expression)->
 		super()
 		@children.push(@expression)
-		@padding_for_parentheses = 1.4 / 2
+		@padding_for_parentheses = 0.7
 
 	Object.defineProperties @prototype,
 		children:
@@ -75,12 +75,12 @@ class Parenthetical extends MathNode
 			ctx.save()
 			if is_left
 				ctx.scale(-1, 1)
-			ctx.translate(-@bb_left + @padding_for_parentheses/2, 0)
+			ctx.translate(-@bb_left + @padding_for_parentheses, 0)
 			ctx.moveTo(0, -@bb_top)
 			ctx.bezierCurveTo(
-				-curve_amount, -@height/2+curve_control_points_inset,
-				-curve_amount, @height/2-curve_control_points_inset
-				0, @height/2,
+				-curve_amount, -height/2+curve_control_points_inset,
+				-curve_amount, height/2-curve_control_points_inset
+				0, height/2,
 			)
 			ctx.restore()
 		draw_paren(-@bb_left, true)
@@ -143,11 +143,11 @@ class InfixBinaryOperator extends MathNode
 		if @vertical
 			@bb_left = Math.max(@lhs.bb_left, @rhs.bb_left)
 			@bb_right = Math.max(@lhs.bb_right, @rhs.bb_right)
-			@bb_top = Math.max(@lhs.bb_top, @rhs.bb_top) + @operand_separation_padding
-			@bb_bottom = Math.max(@lhs.bb_bottom, @rhs.bb_bottom) + @operand_separation_padding
+			@bb_top = Math.max(@lhs.bb_top, @rhs.bb_top) * 2 + @operand_separation_padding
+			@bb_bottom = Math.max(@lhs.bb_bottom, @rhs.bb_bottom) * 2 + @operand_separation_padding
 		else
-			@bb_left = Math.max(@lhs.bb_left, @rhs.bb_left) + @operand_separation_padding
-			@bb_right = Math.max(@lhs.bb_right, @rhs.bb_right) + @operand_separation_padding
+			@bb_left = Math.max(@lhs.bb_left, @rhs.bb_left) * 2 + @operand_separation_padding
+			@bb_right = Math.max(@lhs.bb_right, @rhs.bb_right) * 2 + @operand_separation_padding
 			@bb_top = Math.max(@lhs.bb_top, @rhs.bb_top)
 			@bb_bottom = Math.max(@lhs.bb_bottom, @rhs.bb_bottom)
 
@@ -198,15 +198,18 @@ class Fraction extends InfixBinaryOperator
 	update: ->
 		super()
 		if @vertical
-			@lhs_stroke_length_to = Math.max(@denominator.bb_left, @divisor.bb_left, 1) + .9/2
-			@rhs_stroke_length_to = Math.max(@denominator.bb_right, @divisor.bb_right, 1) + .9/2
+			@lhs_stroke_length_to = Math.max(@denominator.bb_left, @divisor.bb_left, 1/2) + .9/2
+			@rhs_stroke_length_to = Math.max(@denominator.bb_right, @divisor.bb_right, 1/2) + .9/2
 		else
 			@lhs_stroke_length_to =
 			@rhs_stroke_length_to =
-				Math.max(
-					@denominator.bb_top + @denominator.bb_bottom
-					@divisor.bb_top + @divisor.bb_bottom, 1
-				) + .9/2
+				(
+					Math.max(
+						@denominator.bb_top + @denominator.bb_bottom
+						@divisor.bb_top + @divisor.bb_bottom
+						1
+					) + .9
+				) / 2
 	
 		slowness = 9 # 20
 		@lhs_stroke_length += (@lhs_stroke_length_to - @lhs_stroke_length) / slowness
