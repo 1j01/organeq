@@ -33,18 +33,20 @@ lerp = (x, a, b)->
 
 class MathNode
 	debug_id_counter = 1
-	debug_colors = [
-		"red"
-		"orange"
-		"yellow"
-		"lime"
-		"green"
-		"aqua"
-		"blue"
-		"fuchsia"
-	]
+	# debug_colors = [
+	# 	"red"
+	# 	"orange"
+	# 	"yellow"
+	# 	"lime"
+	# 	"green"
+	# 	"aqua"
+	# 	"blue"
+	# 	"fuchsia"
+	# ]
 	constructor: ->
 		@debug_id = debug_id_counter++
+		class_based_hue_factor = [Literal, Fraction, Parenthetical, InfixBinaryOperator, MathNode].indexOf(@constructor)
+		@debug_color = "hsla(#{class_based_hue_factor/3.1+0.2}turn, 100%, 50%, 0.5)"
 		@bb_left = 0
 		@bb_top = 0
 		@bb_right = 0
@@ -74,8 +76,8 @@ class MathNode
 			ctx.save()
 			ctx.beginPath()
 			ctx.rect(-@bb_left, -@bb_top, width, height)
-			ctx.fillStyle = debug_colors[@debug_id] ? "rgba(255, 0, 125, 0.3)"
-			ctx.strokeStyle = debug_colors[@debug_id] ? "rgba(255, 125, 200, 0.7)"
+			ctx.fillStyle = @debug_color
+			ctx.strokeStyle = @debug_color
 			ctx.lineWidth = 0.03
 			ctx.globalAlpha = 0.3 / (if i is 10 then 1 else lerp(debug_draw_3d_enabledness, 1, 10)) * debug_draw_enabledness
 			# ctx.globalAlpha = (if i is 10 then 0.3 else lerp(debug_draw_3d_enabledness, 0.3, 0.03)) * debug_draw_enabledness
