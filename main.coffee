@@ -17,8 +17,20 @@ do debug_draw_checkbox.onchange = ->
 debug_draw_checkbox_label.onselectstart = (e)->
 	e.preventDefault()
 
+time = 0
+
 class MathNode
 	debug_id_counter = 1
+	debug_colors = [
+		"red"
+		"orange"
+		"yellow"
+		"lime"
+		"green"
+		"aqua"
+		"blue"
+		"fuchsia"
+	]
 	constructor: ->
 		@debug_id = debug_id_counter++
 		@bb_left = 0
@@ -35,15 +47,20 @@ class MathNode
 		if debug_draw_enabled
 			@debugDraw()
 	debugDraw: ->
+		ctx.translate(cos(@debug_id*time/100)/10, sin(@debug_id*time/100)/10)
+		# ctx.transform(1, 1, 0, 1, 0, 0)
+		# ctx.scale(1+cos(@debug_id*time/100)/10, 1+sin(@debug_id*time/100)/10)
 		ctx.save()
 		width = @bb_left + @bb_right
 		height = @bb_top + @bb_bottom
 		ctx.beginPath()
 		ctx.rect(-@bb_left, -@bb_top, width, height)
-		ctx.fillStyle = "rgba(255, 0, 125, 0.3)"
-		ctx.strokeStyle = "rgba(255, 125, 200, 0.7)"
+		ctx.fillStyle = debug_colors[@debug_id] ? "rgba(255, 0, 125, 0.3)"
+		ctx.strokeStyle = debug_colors[@debug_id] ? "rgba(255, 125, 200, 0.7)"
 		ctx.lineWidth = 0.03
+		ctx.globalAlpha = 0.3
 		ctx.fill()
+		ctx.globalAlpha = 0.8
 		ctx.stroke()
 		ctx.restore()
 
@@ -366,7 +383,8 @@ canvas.onselectstart = (e)->
 	e.preventDefault()
 
 animate ->
-	
+	time += 1
+
 	{width: w, height: h} = canvas
 	
 	ctx.fillStyle = "black"
