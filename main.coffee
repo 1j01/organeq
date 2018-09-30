@@ -24,6 +24,19 @@ class MathNode
 		child.update() for child in @children
 	# draw: ->
 	# 	console.warn "draw() not implemented for #{@constructor.name}"
+	debugDraw: ->
+		ctx.save()
+		width = @bb_left + @bb_right
+		height = @bb_top + @bb_bottom
+		ctx.beginPath()
+		ctx.rect(-@bb_left, -@bb_top, width, height)
+		ctx.fillStyle = "rgba(255, 0, 125, 0.3)"
+		ctx.strokeStyle = "rgba(255, 125, 200, 0.7)"
+		ctx.lineWidth = 0.03
+		ctx.fill()
+		ctx.stroke()
+		ctx.restore()
+		child.debugDraw() for child in @children
 
 class Parenthetical extends MathNode
 	constructor: (@expression)->
@@ -203,15 +216,6 @@ class Fraction extends InfixBinaryOperator
 			@bb_top = Math.max(@bb_top, @lhs_stroke_length)
 			@bb_bottom = Math.max(@bb_bottom, @rhs_stroke_length)
 
-	draw: ->
-		super()
-		
-		# debug
-		# ctx.save()
-		# ctx.fillStyle = "rgba(255, 125, 125, 0.3)"
-		# ctx.fillRect(-@width/2, -@height/2, @width, @height)
-		# ctx.restore()
-
 	drawOperator: ->
 		ctx.save()
 		stroke_width = 0.1
@@ -359,6 +363,7 @@ animate ->
 	scale = 100
 	ctx.scale(scale, scale)
 	root.update()
+	root.debugDraw()
 	root.draw()
 	ctx.restore()
 
