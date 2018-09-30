@@ -15,10 +15,15 @@ debug_draw_enabled = no
 debug_draw_3d_checkbox = document.getElementById("debug-draw-3d")
 debug_draw_3d_checkbox_label = debug_draw_3d_checkbox.parentElement
 debug_draw_3d_enabled = no
+debug_draw_content_color_checkbox = document.getElementById("debug-draw-content-color")
+debug_draw_content_color_checkbox_label = debug_draw_content_color_checkbox.parentElement
+debug_draw_content_color_enabled = no
 do debug_draw_checkbox.onchange = ->
 	debug_draw_enabled = debug_draw_checkbox.checked
 do debug_draw_3d_checkbox.onchange = ->
 	debug_draw_3d_enabled = debug_draw_3d_checkbox.checked
+do debug_draw_content_color_checkbox.onchange = ->
+	debug_draw_content_color_enabled = debug_draw_content_color_checkbox.checked
 debug_draw_checkbox_label.onselectstart = (e)->
 	e.preventDefault()
 debug_draw_3d_checkbox_label.onselectstart = (e)->
@@ -79,12 +84,15 @@ class MathNode
 			ctx.fillStyle = @debug_color
 			ctx.strokeStyle = @debug_color
 			ctx.lineWidth = 0.03
-			ctx.globalAlpha = 0.3 / (if i is 10 then 1 else lerp(debug_draw_3d_enabledness, 1, 10)) * debug_draw_enabledness
+			ctx.globalAlpha = (if debug_draw_content_color_enabled then 0.1 else 0.3) / (if i is 10 then 1 else lerp(debug_draw_3d_enabledness, 1, 10)) * debug_draw_enabledness
 			# ctx.globalAlpha = (if i is 10 then 0.3 else lerp(debug_draw_3d_enabledness, 0.3, 0.03)) * debug_draw_enabledness
 			ctx.fill()
 			ctx.globalAlpha = (if i is 10 then 1 else lerp(debug_draw_3d_enabledness, 1, 1/5)) * debug_draw_enabledness
 			ctx.stroke()
 			ctx.restore()
+		if debug_draw_content_color_enabled
+			ctx.fillStyle = @debug_color
+			ctx.strokeStyle = @debug_color
 
 class Parenthetical extends MathNode
 	constructor: (@expression)->
