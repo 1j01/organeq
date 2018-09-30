@@ -50,19 +50,22 @@
 			}
 			header,
 			footer,
-			nav a {
+			nav a,
+			#controls label {
 				transition: opacity 1s; /* normally I wouldn't go for such a long transition, but this is an ARTSY PROJECT */
 			}
 			header:not(:hover),
 			footer:not(:hover),
-			nav a:not(:hover):not(:focus) {
+			nav a:not(:hover):not(:focus),
+			#controls label:not(:hover):not(:focus) {
 				transition-duration: 5s; /* let's make it even longer haha why not */
 			}
 			header:not(:hover),
 			footer:not(:hover) {
 				opacity: 0.5;
 			}
-			nav a:not(:hover):not(:focus) {
+			nav a:not(:hover):not(:focus),
+			#controls label:not(:hover):not(:focus) {
 				text-decoration: none;
 				opacity: 0.2;
 			}
