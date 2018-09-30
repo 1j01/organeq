@@ -23,14 +23,25 @@
 			footer {
 				bottom: 0;
 			}
+			/* TODO: perhaps redo layout with less absolute stuff */
 			nav {
 				position: absolute;
 				top: 0;
 				left: 0;
 				z-index: 1;
 			}
+			#controls {
+				position: absolute;
+				top: 0;
+				right: 0;
+				z-index: 1;
+			}
 			nav a {
 				color: aqua;
+				display: block;
+				padding: 0.5em;	
+			}
+			#controls label {
 				display: block;
 				padding: 0.5em;	
 			}
@@ -61,6 +72,13 @@
 		<nav>
 			<h1><a href="https://github.com/1j01/organeq">Organeq</a></h1>
 		</nav>
+		<div id="controls">
+			<label>
+				<input id="debug-draw" type="checkbox"/>
+				Debug Draw
+				<!-- Bounding Boxes -->
+			</label>
+		</div>
 		<header>
 			<p title="Symmetry. Flow. Understanding. Creating. Doing.">Math can be beautiful.</p>
 			<!-- What do I mean by flow? I don't know. But it seemed to flow, you know? -->

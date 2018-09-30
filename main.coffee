@@ -9,10 +9,13 @@
 # TODO: bounding box (&etc.) system(s/z)
 # maybe use MathJax? it's supposed to have modular input/output
 
-debug_id_counter = 1
+debug_draw_checkbox = document.getElementById("debug-draw")
 debug_draw_enabled = no
+do debug_draw_checkbox.onchange = ->
+	debug_draw_enabled = debug_draw_checkbox.checked
 
 class MathNode
+	debug_id_counter = 1
 	constructor: ->
 		@debug_id = debug_id_counter++
 		@bb_left = 0
