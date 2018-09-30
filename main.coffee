@@ -10,6 +10,7 @@
 # maybe use MathJax? it's supposed to have modular input/output
 
 debug_id_counter = 1
+debug_draw_enabled = yes
 
 class MathNode
 	constructor: ->
@@ -22,8 +23,11 @@ class MathNode
 		@parent = null
 	update: ->
 		child.update() for child in @children
-	# draw: ->
-	# 	console.warn "draw() not implemented for #{@constructor.name}"
+	draw: ->
+		if @draw is MathNode::draw
+			console.warn "draw() not implemented for #{@constructor.name}"
+		if debug_draw_enabled
+			@debugDraw()
 	debugDraw: ->
 		ctx.save()
 		width = @bb_left + @bb_right
@@ -36,7 +40,6 @@ class MathNode
 		ctx.fill()
 		ctx.stroke()
 		ctx.restore()
-		child.debugDraw() for child in @children
 
 class Parenthetical extends MathNode
 	constructor: (@expression)->
@@ -57,6 +60,7 @@ class Parenthetical extends MathNode
 		@bb_bottom = @expression.bb_bottom
 
 	draw: ->
+		super()
 		width = @bb_left + @bb_right
 		height = @bb_top + @bb_bottom
 		ctx.save()
@@ -148,6 +152,7 @@ class InfixBinaryOperator extends MathNode
 			@bb_bottom = Math.max(@lhs.bb_bottom, @rhs.bb_bottom)
 
 	draw: ->
+		super()
 		
 		@drawOperator()
 
@@ -233,6 +238,8 @@ class Literal extends MathNode
 	constructor: (@value)->
 		super()
 	draw: ->
+		super()
+
 		font_size = 100
 		ctx.textAlign = "center"
 		ctx.textBaseline = "middle"
@@ -363,7 +370,6 @@ animate ->
 	scale = 100
 	ctx.scale(scale, scale)
 	root.update()
-	root.debugDraw()
 	root.draw()
 	ctx.restore()
 
