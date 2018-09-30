@@ -47,22 +47,26 @@ class MathNode
 		if debug_draw_enabled
 			@debugDraw()
 	debugDraw: ->
-		# ctx.translate(cos(@debug_id*time/100)/10, sin(@debug_id*time/100)/10)
-		ctx.scale(1+cos(@debug_id*time/100)/10, 1+sin(@debug_id*time/100)/10)
-		# ctx.transform(1, 0, 0, 1, 0, 0)
-		ctx.save()
 		width = @bb_left + @bb_right
 		height = @bb_top + @bb_bottom
-		ctx.beginPath()
-		ctx.rect(-@bb_left, -@bb_top, width, height)
-		ctx.fillStyle = debug_colors[@debug_id] ? "rgba(255, 0, 125, 0.3)"
-		ctx.strokeStyle = debug_colors[@debug_id] ? "rgba(255, 125, 200, 0.7)"
-		ctx.lineWidth = 0.03
-		ctx.globalAlpha = 0.3
-		ctx.fill()
-		ctx.globalAlpha = 0.8
-		ctx.stroke()
-		ctx.restore()
+		# ctx.shadowBlur = 11
+		# ctx.shadowColor = "white"
+		# ctx.translate(cos(@debug_id*time/100)/10, sin(@debug_id*time/100)/10)
+		# ctx.scale(1+cos(@debug_id+time/100)/10, 1+sin(@debug_id+time/100)/10)
+		# ctx.transform(1, cos(time/100)/100, sin(time/100)/100, 1, 0, 0)
+		for i in [0..10]
+			ctx.translate(cos(time/100)/100, sin(time/100)/100)
+			ctx.save()
+			ctx.beginPath()
+			ctx.rect(-@bb_left, -@bb_top, width, height)
+			ctx.fillStyle = debug_colors[@debug_id] ? "rgba(255, 0, 125, 0.3)"
+			ctx.strokeStyle = debug_colors[@debug_id] ? "rgba(255, 125, 200, 0.7)"
+			ctx.lineWidth = 0.03
+			ctx.globalAlpha = 0.3 / if i is 10 then 1 else 10
+			ctx.fill()
+			ctx.globalAlpha = 0.8 / if i is 10 then 3 else 5
+			ctx.stroke()
+			ctx.restore()
 
 class Parenthetical extends MathNode
 	constructor: (@expression)->
