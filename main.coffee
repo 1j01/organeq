@@ -66,7 +66,7 @@ class MathNode
 		# ctx.translate(cos(@debug_id*time/100)/10, sin(@debug_id*time/100)/10)
 		# ctx.scale(1+cos(@debug_id+time/100)/10, 1+sin(@debug_id+time/100)/10)
 		# ctx.transform(1, cos(time/100)/100, sin(time/100)/100, 1, 0, 0)
-		for i in [((1-debug_draw_3d_enabledness) * 9)..10]
+		for i in [~~((1-debug_draw_3d_enabledness) * 9)..10]
 			ctx.translate(
 				cos(time/100)/100*debug_draw_3d_enabledness
 				sin(time/100)/100*debug_draw_3d_enabledness
@@ -78,8 +78,9 @@ class MathNode
 			ctx.strokeStyle = debug_colors[@debug_id] ? "rgba(255, 125, 200, 0.7)"
 			ctx.lineWidth = 0.03
 			ctx.globalAlpha = 0.3 / (if i is 10 then 1 else lerp(debug_draw_3d_enabledness, 1, 10)) * debug_draw_enabledness
+			# ctx.globalAlpha = (if i is 10 then 0.3 else lerp(debug_draw_3d_enabledness, 0.3, 0.03)) * debug_draw_enabledness
 			ctx.fill()
-			ctx.globalAlpha = 0.8 / (if i is 10 then 3 else lerp(debug_draw_3d_enabledness, 1, 5)) * debug_draw_enabledness
+			ctx.globalAlpha = (if i is 10 then 1 else lerp(debug_draw_3d_enabledness, 1, 1/5)) * debug_draw_enabledness
 			ctx.stroke()
 			ctx.restore()
 
