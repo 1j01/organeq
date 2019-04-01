@@ -99,7 +99,7 @@ class Parenthetical extends MathNode
 		super()
 		@children.push(@expression)
 		@padding_for_parentheses = 0.7
-		@vertical_padding = 0.1
+		@vertical_padding = 0.1 # more like vertical extension
 
 	Object.defineProperties @prototype,
 		children:
@@ -119,7 +119,7 @@ class Parenthetical extends MathNode
 		height = @bb_top + @bb_bottom
 		ctx.save()
 		ctx.rect(-@bb_left, -@bb_top, width, height)
-		ctx.clip()
+		# ctx.clip()
 		ctx.beginPath()
 		curve_amount = 0.5 # TODO: base on height
 		curve_control_points_inset = height * 0.3
@@ -127,18 +127,17 @@ class Parenthetical extends MathNode
 		# get rid of the clip() and do that geometry more directly
 		draw_paren = (x, is_left)=>
 			ctx.save()
-			if is_left
-				ctx.scale(-1, 1)
-			ctx.translate(-@bb_left + @padding_for_parentheses, 0)
+			ctx.scale(-1, 1) unless is_left
+			ctx.translate(-x + @padding_for_parentheses, 0)
 			ctx.moveTo(0, -@bb_top)
 			ctx.bezierCurveTo(
-				-curve_amount, -height/2+curve_control_points_inset,
-				-curve_amount, height/2-curve_control_points_inset
-				0, height/2,
+				-curve_amount, -@bb_top+curve_control_points_inset,
+				-curve_amount, @bb_bottom-curve_control_points_inset
+				0, @bb_bottom,
 			)
 			ctx.restore()
-		draw_paren(-@bb_left, true)
-		draw_paren(-@bb_right, false)
+		draw_paren(@bb_left, true)
+		draw_paren(@bb_right, false)
 		ctx.lineWidth = 0.1
 		ctx.lineCap = "square" # extend further to get cut off by clip
 		ctx.stroke()
@@ -194,16 +193,16 @@ class InfixBinaryOperator extends MathNode
 			
 		# )
 		# TODO: smooth
-		if @vertical
-			@bb_left = Math.max(@lhs.bb_left, @rhs.bb_left)
-			@bb_right = Math.max(@lhs.bb_right, @rhs.bb_right)
-			@bb_top = Math.max(@lhs.bb_top, @rhs.bb_top) * 2 + @operand_separation_padding
-			@bb_bottom = Math.max(@lhs.bb_bottom, @rhs.bb_bottom) * 2 + @operand_separation_padding
-		else
-			@bb_left = Math.max(@lhs.bb_left, @rhs.bb_left) * 2 + @operand_separation_padding
-			@bb_right = Math.max(@lhs.bb_right, @rhs.bb_right) * 2 + @operand_separation_padding
-			@bb_top = Math.max(@lhs.bb_top, @rhs.bb_top)
-			@bb_bottom = Math.max(@lhs.bb_bottom, @rhs.bb_bottom)
+		# if @vertical
+		# 	@bb_left = Math.max(@lhs.bb_left, @rhs.bb_left)
+		# 	@bb_right = Math.max(@lhs.bb_right, @rhs.bb_right)
+		# 	@bb_top = @lhs.bb_top + @lhs.bb_bottom + @operand_separation_padding
+		# 	@bb_bottom = @rhs.bb_top + @rhs.bb_bottom + @operand_separation_padding
+		# else
+		# 	@bb_left = @lhs.bb_left + @lhs.bb_right + @operand_separation_padding
+		# 	@bb_right = @rhs.bb_left + @rhs.bb_right + @operand_separation_padding
+		# 	@bb_top = Math.max(@lhs.bb_top, @rhs.bb_top)
+		# 	@bb_bottom = Math.max(@lhs.bb_bottom, @rhs.bb_bottom)
 
 	draw: ->
 		super()
@@ -215,7 +214,7 @@ class InfixBinaryOperator extends MathNode
 		#ctx.translate(-@operand_separation_factor/2, 0)
 		ctx.rotate(@operand_angle)
 		# TODO: smooth
-		operand_dimension = if @vertical then @lhs.bb_top + @lhs.bb_bottom else (@lhs.bb_left + @lhs.bb_right)/2 # TODO: why /2?
+		operand_dimension = if @vertical then @lhs.bb_top + @lhs.bb_bottom else (@lhs.bb_left + @lhs.bb_right)/2 # TODO: why /2?..
 		ctx.translate(-operand_dimension * @operand_separation_factor - @operand_separation_padding/2, 0)
 		ctx.rotate(-@operand_angle)
 		@lhs.draw()
