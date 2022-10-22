@@ -400,6 +400,9 @@ alternateAlignments = (node, fractionLevelsProcessed)->
 
 alternateAlignments(root, 0)
 
+scale = 100
+scale_to = 100
+
 canvas.onclick = (e)->
 	e.preventDefault()
 	# console.group("ONCLICK EVENT")
@@ -409,6 +412,8 @@ canvas.onclick = (e)->
 	alternateAlignments(root, 0)
 	# console.log("the root is now", root)
 	# console.groupEnd("ONCLICK EVENT")
+	scale_to *= 0.7
+	scale_to += 1
 canvas.onselectstart = (e)->
 	e.preventDefault()
 
@@ -416,6 +421,8 @@ animate ->
 	time += 1
 	debug_draw_enabledness += (debug_draw_enabled - debug_draw_enabledness) / 12
 	debug_draw_3d_enabledness += ((debug_draw_3d_enabled and debug_draw_enabled) - debug_draw_3d_enabledness) / 8
+
+	scale += (scale_to - scale) * 0.1
 
 	{width: w, height: h} = canvas
 	
@@ -427,7 +434,6 @@ animate ->
 	
 	ctx.save()
 	ctx.translate(w / 2, h / 2)
-	scale = 100
 	ctx.scale(scale, scale)
 	root.update()
 	root.draw()
